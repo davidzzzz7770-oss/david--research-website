@@ -3,7 +3,7 @@
   var SITE = window.SITE, FRAMEWORK = window.FRAMEWORK;
   var REPORTS = window.REPORTS.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
   var app = document.getElementById("app");
-  var industryFilter = "all";
+  var sectorFilter = "all", sortKey = "c0", sortDir = -1;
 
   /* ---------- language ---------- */
   var lang = "en";
@@ -14,20 +14,22 @@
     zh: {
       brand: "David Research", navReports: "报告", navCalendar: "日历", navMethod: "方法", navAbout: "关于",
       homeTitle: "A 股行业龙头研究笔记", since: "始于 2025 年 8 月", updated: "更新于",
-      nReports: "期报告", nIndustries: "个行业", nGaps: "期断更",
-      glance: "全部报告一览", glanceNote: "点击任意一行查看完整报告",
-      th: ["期数", "日期", "公司", "行业", "护城河", "趋势", "报告日股价", "中性估值", "空间", "结论"],
-      byIndustry: "按行业分支", all: "全部",
+      nReports: "期报告", nSectors: "大板块", nGaps: "期断更（考试）",
+      glance: "全部报告一览", glanceNote: "点击表头可排序，点击任意一行查看完整报告",
+      th: ["期数", "日期", "公司", "行业", "护城河", "趋势", "报告日股价", "中性估值", "空间", "估值位置"],
+      byIndustry: "行业分支与市场位置", all: "全部",
+      mapNote: "按板块分组，条形长度为报告日市值",
+      nCompanies: "{n} 家公司", combined: "合计市值", lgGapLong: "断更（2026.4.15–5.15 考试）",
       calendar: "发布日历", calendarNote: "每格代表一个双周节点",
       lgPub: "已发布", lgGap: "断更", lgPend: "待补充",
       method: "研究方法", methodNote: "每份报告都回答这六个问题",
       about: "关于",
       back: "← 返回全部报告", issue: "第 {n} 期",
       snapshot: "一页结论", thesis: "核心观点", financials: "关键数据",
-      sVerdict: "估值结论", sMoat: "护城河评分", sTrend: "护城河趋势", sPrice: "报告日股价",
+      sVerdict: "估值位置", sMoat: "护城河评分", sTrend: "护城河趋势", sPrice: "报告日股价",
       sBase: "中性估值区间", sUpside: "到中性中值的空间", sRisk: "最大风险", sWatch: "下期跟踪",
       colSource: "来源", colScore: "强度", colWhy: "理由",
-      case: "情景", range: "价格区间", multiple: "市盈率", condition: "前提",
+      case: "情景", range: "价格区间", multiple: "倍数", condition: "前提", notAdvice: "学习记录，不构成投资建议", sMcap: "报告日市值",
       bear: "悲观", base: "中性", bull: "乐观", priceNow: "报告日",
       valBasis: "估值基础", unit: "单位：元/股",
       plus: "在加宽", minus: "在变窄",
@@ -38,20 +40,22 @@
     en: {
       brand: "David Research", navReports: "Reports", navCalendar: "Calendar", navMethod: "Method", navAbout: "About",
       homeTitle: "Research notes on China's market leaders", since: "Since August 2025", updated: "Updated",
-      nReports: "reports", nIndustries: "industries", nGaps: "missed",
-      glance: "All reports at a glance", glanceNote: "Click any row to open the full report",
-      th: ["No.", "Date", "Company", "Industry", "Moat", "Trend", "Price", "Base value", "Upside", "Verdict"],
-      byIndustry: "Reports by industry", all: "All",
+      nReports: "reports", nSectors: "sectors", nGaps: "missed (exams)",
+      glance: "All reports at a glance", glanceNote: "Click a header to sort, or a row to open the report",
+      th: ["No.", "Date", "Company", "Industry", "Moat", "Trend", "Price", "Base value", "Upside", "Valuation view"],
+      byIndustry: "Industry branches and market position", all: "All",
+      mapNote: "Grouped by sector; bar length is market value on the report date",
+      nCompanies: "{n} companies", combined: "Combined value", lgGapLong: "Missed (exams, 15 Apr–15 May 2026)",
       calendar: "Publishing calendar", calendarNote: "Each square is one two-week slot",
       lgPub: "Published", lgGap: "Missed", lgPend: "Coming",
       method: "Method", methodNote: "Every report answers these six questions",
       about: "About",
       back: "← All reports", issue: "Issue {n}",
       snapshot: "Snapshot", thesis: "Key points", financials: "Key figures",
-      sVerdict: "Verdict", sMoat: "Moat score", sTrend: "Moat trend", sPrice: "Price on report date",
+      sVerdict: "Valuation view", sMoat: "Moat score", sTrend: "Moat trend", sPrice: "Price on report date",
       sBase: "Base-case range", sUpside: "Upside to base midpoint", sRisk: "Biggest risk", sWatch: "Watching next",
       colSource: "Source", colScore: "Strength", colWhy: "Why",
-      case: "Case", range: "Price range", multiple: "P/E", condition: "What has to be true",
+      case: "Case", range: "Price range", multiple: "Multiple", condition: "What has to be true", notAdvice: "Study notes, not investment advice", sMcap: "Market value on report date",
       bear: "Bear", base: "Base", bull: "Bull", priceNow: "Report date",
       valBasis: "Basis", unit: "CNY per share",
       plus: "Widening", minus: "Narrowing",
@@ -88,6 +92,17 @@
     for (var i = 1; i <= 5; i++) h += '<i class="' + (i <= n ? "f" : "") + '"></i>';
     return '<span class="score" aria-label="' + n + '/5">' + h + '</span><span class="num score-n">' + n + "/5</span>";
   }
+  function sectorName(k) {
+    var sec = SITE.sectors.filter(function (x) { return x.key === k; })[0];
+    return sec ? t(sec.name) : k;
+  }
+  function capFmt(n) {
+    if (lang === "zh") return n >= 10000 ? (n / 10000).toFixed(2) + " 万亿" : money(Math.round(n)) + " 亿";
+    return n >= 10000 ? "¥" + (n / 10000).toFixed(2) + " trn" : "¥" + money(Math.round(n / 10)) + " bn";
+  }
+  var METRIC = { PE: "P/E", PB: "P/B", PEV: "P/EV" };
+  function metricOf(r) { return r.valuation.metric || "PE"; }
+  function multFmt(r) { return METRIC[metricOf(r)] + " " + r.mult + "x"; }
   function trendTag(k) { return '<span class="trend ' + k + '">' + tx(ENUM.trend[k]) + "</span>"; }
 
   function slots() {
@@ -128,13 +143,19 @@
   function renderHome() {
     var s = slots();
     var gaps = s.filter(function (x) { return x.state === "gap"; }).length;
-    var industries = [];
-    REPORTS.forEach(function (r) {
-      if (!industries.some(function (i) { return i.zh === r.industry.zh; })) industries.push(r.industry);
-    });
+    var maxCap = Math.max.apply(null, REPORTS.map(function (r) { return r.mcap; }));
+    function inFilter(r) { return sectorFilter === "all" || r.sector === sectorFilter; }
 
-    var th = u("th").map(function (h, i) { return '<th class="c' + i + '">' + h + "</th>"; }).join("");
-    var rows = REPORTS.slice().reverse().map(function (r) {
+    /* at-a-glance table */
+    var SORT = { c0: function (r) { return issueNo(r); }, c4: function (r) { return r.moatScore * 1000 + upside(r); }, c8: upside };
+    var th = u("th").map(function (h, i) {
+      var k = "c" + i;
+      if (!SORT[k]) return '<th class="' + k + '">' + h + "</th>";
+      var arrow = sortKey === k ? (sortDir < 0 ? " ↓" : " ↑") : "";
+      return '<th class="' + k + '"><button type="button" class="sort' + (sortKey === k ? " on" : "") + '" data-sort="' + k + '">' + h + arrow + "</button></th>";
+    }).join("");
+    var list = REPORTS.filter(inFilter).sort(function (x, y) { return (SORT[sortKey](x) - SORT[sortKey](y)) * sortDir; });
+    var rows = list.map(function (r) {
       var up = upside(r);
       return '<tr data-go="r-' + r.id + '" tabindex="0">' +
         '<td class="c0 num">' + pad2(issueNo(r)) + "</td>" +
@@ -149,23 +170,25 @@
         '<td class="c9">' + tx(ENUM.verdict[r.verdict]) + "</td></tr>";
     }).join("");
 
-    var chips = [{ k: "all", label: u("all") }].concat(industries.map(function (i) { return { k: i.zh, label: t(i) }; }))
-      .map(function (c) { return '<button type="button" class="chip' + (c.k === industryFilter ? " on" : "") + '" data-ind="' + esc(c.k) + '">' + esc(c.label) + "</button>"; }).join("");
+    var used = SITE.sectors.filter(function (sec) { return REPORTS.some(function (r) { return r.sector === sec.key; }); });
+    var chips = [{ key: "all", name: u("all") }].concat(used).map(function (c) {
+      var n = c.key === "all" ? REPORTS.length : REPORTS.filter(function (r) { return r.sector === c.key; }).length;
+      return '<button type="button" class="chip' + (c.key === sectorFilter ? " on" : "") + '" data-sec="' + c.key + '">' + tx(c.name) + ' <span class="num">' + n + "</span></button>";
+    }).join("");
 
-    var groups = {}, order = [];
-    REPORTS.slice().reverse().forEach(function (r) {
-      var k = r.industry.zh;
-      if (!groups[k]) { groups[k] = []; order.push(k); }
-      groups[k].push(r);
-    });
-    var tree = order.filter(function (k) { return industryFilter === "all" || industryFilter === k; }).map(function (k) {
-      var first = groups[k][0];
-      var leaves = groups[k].map(function (r) {
-        return '<a class="leaf" href="#r-' + r.id + '"><span class="num leaf-date">' + r.date + "</span>" +
-          '<span class="leaf-co">' + tx(r.company) + "</span>" +
-          '<span class="leaf-pos">' + tx(r.position) + "</span></a>";
+    /* sector branches with market position */
+    var tree = used.filter(function (sec) { return sectorFilter === "all" || sec.key === sectorFilter; }).map(function (sec) {
+      var rs = REPORTS.filter(function (r) { return r.sector === sec.key; }).sort(function (x, y) { return y.mcap - x.mcap; });
+      var total = rs.reduce(function (a, r) { return a + r.mcap; }, 0);
+      var leaves = rs.map(function (r) {
+        return '<a class="leaf" href="#r-' + r.id + '">' +
+          '<span class="leaf-co">' + tx(r.company) + '<small>' + tx(r.industry) + "</small></span>" +
+          '<span class="cap"><i style="width:' + (r.mcap / maxCap * 100).toFixed(1) + '%"></i></span>' +
+          '<span class="num cap-v">' + capFmt(r.mcap) + "</span>" +
+          '<span class="num mult">' + multFmt(r) + "</span></a>";
       }).join("");
-      return '<div class="branch"><div class="branch-name"><b>' + tx(first.industry) + "</b><span>" + tx(first.sector) + "</span></div>" +
+      return '<div class="branch"><div class="branch-name"><b>' + tx(sec.name) + "</b><span>" +
+        u("nCompanies").replace("{n}", rs.length) + "<br>" + u("combined") + " " + capFmt(total) + "</span></div>" +
         '<div class="leaves">' + leaves + "</div></div>";
     }).join("");
 
@@ -174,28 +197,29 @@
       if (x.state === "pub") return '<a class="pub num" href="#r-' + x.report.id + '" title="' + esc(label) + '">' + pad2(issueNo(x.report)) + "</a>";
       return '<span class="' + x.state + '" title="' + esc(label) + '"></span>';
     }).join("");
+    var hasPend = s.some(function (x) { return x.state === "pend"; });
 
-    var method = FRAMEWORK.map(function (f, i) {
-      return "<li><b>" + tx(f.name) + "</b><span>" + tx(f.q) + "</span></li>";
-    }).join("");
+    var method = FRAMEWORK.map(function (f) { return "<li><b>" + tx(f.name) + "</b><span>" + tx(f.q) + "</span></li>"; }).join("");
     var about = SITE.about.map(function (a) { return "<div><h3>" + tx(a.h) + "</h3><p>" + tx(a.p) + "</p></div>"; }).join("");
 
     app.innerHTML =
       '<div class="wrap">' +
       '<section class="intro"><h1>' + u("homeTitle") + "</h1><p>" + tx(SITE.intro) + "</p>" +
-      '<p class="meta">' + REPORTS.length + " " + u("nReports") + " · " + industries.length + " " + u("nIndustries") + " · " +
-      gaps + " " + u("nGaps") + " · " + u("since") + "</p></section>" +
+      '<p class="meta">' + REPORTS.length + " " + u("nReports") + " · " + used.length + " " + u("nSectors") + " · " +
+      gaps + " " + u("nGaps") + " · " + u("since") + '</p><p class="note">' + tx(SITE.disclaimer) + "</p></section>" +
 
       '<section class="sec" id="reports"><div class="sec-head"><h2>' + u("glance") + "</h2><p>" + u("glanceNote") + "</p></div>" +
+      '<div class="chips">' + chips + "</div>" +
       '<div class="table-scroll"><table class="glance"><thead><tr>' + th + "</tr></thead><tbody>" + rows + "</tbody></table></div></section>" +
 
-      '<section class="sec"><div class="sec-head"><h2>' + u("byIndustry") + '</h2><div class="chips">' + chips + "</div></div>" +
+      '<section class="sec" id="sectors"><div class="sec-head"><h2>' + u("byIndustry") + "</h2><p>" + u("mapNote") + "</p></div>" +
       '<div class="tree">' + tree + "</div></section>" +
 
       '<section class="sec" id="calendar"><div class="sec-head"><h2>' + u("calendar") + "</h2><p>" + u("calendarNote") + "</p></div>" +
       '<div class="cal">' + cal + "</div>" +
-      '<div class="legend"><span><i class="l-pub"></i>' + u("lgPub") + '</span><span><i class="l-gap"></i>' + u("lgGap") +
-      '</span><span><i class="l-pend"></i>' + u("lgPend") + '</span><span class="num legend-range">' + s[0].date + " → " + s[s.length - 1].date + "</span></div></section>" +
+      '<div class="legend"><span><i class="l-pub"></i>' + u("lgPub") + '</span><span><i class="l-gap"></i>' + u("lgGapLong") + "</span>" +
+      (hasPend ? '<span><i class="l-pend"></i>' + u("lgPend") + "</span>" : "") +
+      '<span class="num legend-range">' + s[0].date + " → " + s[s.length - 1].date + "</span></div></section>" +
 
       '<section class="sec" id="method"><div class="sec-head"><h2>' + u("method") + "</h2><p>" + u("methodNote") + "</p></div>" +
       '<ol class="method">' + method + "</ol></section>" +
@@ -203,11 +227,15 @@
       '<section class="sec" id="about"><div class="sec-head"><h2>' + u("about") + '</h2></div><div class="about">' + about + "</div></section>" +
       "</div>";
 
+    function keep(fn) { return function () { var y = window.scrollY; fn.apply(this, arguments); renderHome(); window.scrollTo(0, y); }; }
     app.querySelectorAll(".chip").forEach(function (b) {
-      b.addEventListener("click", function () {
-        industryFilter = b.getAttribute("data-ind");
-        var y = window.scrollY; renderHome(); window.scrollTo(0, y);
-      });
+      b.addEventListener("click", keep(function () { sectorFilter = b.getAttribute("data-sec"); }));
+    });
+    app.querySelectorAll(".sort").forEach(function (b) {
+      b.addEventListener("click", keep(function () {
+        var k = b.getAttribute("data-sort");
+        if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = -1; }
+      }));
     });
     app.querySelectorAll("tr[data-go]").forEach(function (tr) {
       function go() { location.hash = tr.getAttribute("data-go"); }
@@ -256,10 +284,10 @@
       [u("sMoat"), score(r.moatScore)],
       [u("sTrend"), trendTag(r.trend)],
       [u("sPrice"), '<span class="num">' + money(v.price) + "</span>"],
+      [u("sMcap"), '<span class="num">' + capFmt(r.mcap) + " · " + multFmt(r) + "</span>"],
       [u("sBase"), '<span class="num">' + money(v.base.low) + "–" + money(v.base.high) + "</span>"],
       [u("sUpside"), '<span class="num ' + (up >= 0 ? "pos" : "neg") + '">' + pct(up) + "</span>"],
-      [u("sRisk"), tx(topRisk.title)],
-      [u("sWatch"), tx(r.watch[0])]
+      [u("sRisk"), tx(topRisk.title)]
     ].map(function (x) { return "<div><dt>" + x[0] + "</dt><dd>" + x[1] + "</dd></div>"; }).join("");
 
     var moat = table([u("colSource"), u("colScore"), u("colWhy")], r.moat.items.map(function (m) {
@@ -267,7 +295,7 @@
     }), "moat-t");
     var prod = '<dl class="kv">' + r.product.rows.map(function (p) { return "<div><dt>" + tx(p.k) + "</dt><dd>" + tx(p.v) + "</dd></div>"; }).join("") + "</dl>";
     var val = '<p class="small">' + u("valBasis") + ": " + tx(v.basis) + " · " + u("unit") + "</p>" + band(v) +
-      table([u("case"), u("range"), u("multiple"), u("condition")], ["bear", "base", "bull"].map(function (k) {
+      table([u("case"), u("range"), u("multiple") + " (" + METRIC[metricOf(r)] + ")", u("condition")], ["bear", "base", "bull"].map(function (k) {
         return ['<span class="case ' + k + '">' + u(k) + "</span>", '<span class="num">' + money(v[k].low) + "–" + money(v[k].high) + "</span>", '<span class="num">' + v[k].pe + "</span>", tx(v[k].note)];
       }), "val-t");
     function li(a) { return a.map(function (x) { return "<li>" + tx(x) + "</li>"; }).join(""); }
@@ -283,7 +311,7 @@
     app.innerHTML =
       '<div class="wrap">' +
       '<header class="r-head"><a class="back" href="#reports">' + u("back") + "</a>" +
-      '<p class="r-meta"><span>' + u("issue").replace("{n}", pad2(i + 1)) + '</span><span class="num">' + r.date + "</span><span>" + tx(r.sector) + " / " + tx(r.industry) + "</span></p>" +
+      '<p class="r-meta"><span>' + u("issue").replace("{n}", pad2(i + 1)) + '</span><span class="num">' + r.date + "</span><span>" + esc(sectorName(r.sector)) + " / " + tx(r.industry) + '</span><span class="na">' + u("notAdvice") + "</span></p>" +
       '<h1>' + tx(r.company) + ' <span class="code num">' + r.code + "</span></h1>" +
       '<p class="r-pos">' + tx(r.position) + "</p></header>" +
 

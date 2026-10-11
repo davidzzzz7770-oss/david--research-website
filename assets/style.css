@@ -83,6 +83,8 @@ ul, ol { padding: 0; list-style: none; }
 .intro h1 { font-size: clamp(28px, 4.2vw, 40px); line-height: 1.2; }
 .intro p { margin-top: 14px; font-size: 16px; color: var(--muted); }
 .intro .meta { margin-top: 18px; font-size: 13px; color: var(--ink); }
+.intro .note { margin-top: 6px; font-size: 12px; color: var(--faint); }
+.r-meta .na { color: var(--faint); }
 
 .sec { padding-block: 32px; border-top: 1px solid var(--rule); }
 .sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 18px; }
@@ -96,7 +98,11 @@ th { text-align: left; font-weight: 500; font-size: 12px; color: var(--muted); p
 td { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 tbody tr:last-child td { border-bottom: 0; }
 
-.glance { min-width: 860px; }
+#reports .chips { margin-bottom: 14px; }
+.chip .num { font-size: 11px; opacity: 0.6; margin-left: 2px; }
+.sort { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+.sort.on { color: var(--ink); text-decoration: none; }
+.glance { min-width: 880px; }
 .glance tbody tr { cursor: pointer; }
 .glance tbody tr:hover { background: var(--accent-soft); }
 .glance td { vertical-align: middle; white-space: nowrap; }
@@ -122,19 +128,25 @@ tbody tr:last-child td { border-bottom: 0; }
 .chip:hover { color: var(--ink); }
 .chip.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .tree { display: grid; gap: 20px; }
-.branch { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 20px; }
+.branch { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 20px; }
+.branch-name span { line-height: 1.6; display: block; margin-top: 2px; }
 .branch-name b { display: block; font-family: var(--f-display); font-size: 17px; }
 .branch-name span { font-size: 12px; color: var(--faint); }
 .leaves { border-left: 1px solid var(--rule); }
-.leaf { position: relative; display: grid; grid-template-columns: 96px 150px minmax(0, 1fr); gap: 16px; padding: 8px 0 8px 22px; font-size: 14px; align-items: baseline; }
-.leaf::before { content: ""; position: absolute; left: 0; top: 1.25em; width: 14px; border-top: 1px solid var(--rule); }
-.leaf-date { font-size: 12px; color: var(--faint); }
+.leaf { position: relative; display: grid; grid-template-columns: 210px minmax(0, 1fr) 96px 92px; gap: 14px; padding: 7px 0 7px 22px; font-size: 14px; align-items: center; }
+.leaf::before { content: ""; position: absolute; left: 0; top: 50%; width: 14px; border-top: 1px solid var(--rule); }
 .leaf-co { font-weight: 500; }
-.leaf-pos { color: var(--muted); font-size: 13px; }
+.leaf-co small { display: block; font-weight: 400; font-size: 12px; color: var(--faint); line-height: 1.4; }
+.cap { height: 10px; background: var(--accent-soft); position: relative; }
+.cap i { position: absolute; inset: 0 auto 0 0; background: var(--accent); }
+.cap-v { font-size: 12px; text-align: right; }
+.mult { font-size: 12px; color: var(--muted); text-align: right; }
 .leaf:hover .leaf-co { color: var(--accent); }
+.leaf:hover .cap i { background: var(--brass); }
 @media (max-width: 720px) {
   .branch { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  .leaf { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .leaf { grid-template-columns: minmax(0, 1fr) auto auto; row-gap: 4px; column-gap: 10px; }
+  .leaf-co { grid-column: 1 / -1; }
 }
 
 /* calendar */
