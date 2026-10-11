@@ -50,6 +50,11 @@ window.SITE = {
       )
     }
   ],
+  /*
+   * Journal: your own notes about the project itself, newest shown first.
+   * Example: { date: "2026-05-20", text: T("考完试回来……", "Back from exams...") }
+   */
+  journal: [],
   disclaimer: T(
     "这些报告是我的学习记录，目的是理解不同行业，不构成投资建议。数据截至各期发布日，部分为估算。",
     "These reports are my study notes, written to understand different industries. They are not investment advice. Figures are as of each report date and some are estimates."

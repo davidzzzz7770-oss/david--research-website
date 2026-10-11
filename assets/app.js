@@ -25,7 +25,7 @@
       method: "研究方法", methodNote: "每份报告都回答这六个问题",
       about: "关于",
       back: "← 返回全部报告", issue: "第 {n} 期",
-      snapshot: "一页结论", thesis: "核心观点", financials: "关键数据",
+      snapshot: "一页结论", mine: "我的想法", journal: "研究日志", journalNote: "做这件事过程中的想法和变化", readMore: "看这一期", thesis: "核心观点", financials: "关键数据",
       sVerdict: "估值位置", sMoat: "护城河评分", sTrend: "护城河趋势", sPrice: "报告日股价",
       sBase: "中性估值区间", sUpside: "到中性中值的空间", sRisk: "最大风险", sWatch: "下期跟踪",
       colSource: "来源", colScore: "强度", colWhy: "理由",
@@ -51,7 +51,7 @@
       method: "Method", methodNote: "Every report answers these six questions",
       about: "About",
       back: "← All reports", issue: "Issue {n}",
-      snapshot: "Snapshot", thesis: "Key points", financials: "Key figures",
+      snapshot: "Snapshot", mine: "My thoughts", journal: "Journal", journalNote: "What I was thinking along the way", readMore: "Read this issue", thesis: "Key points", financials: "Key figures",
       sVerdict: "Valuation view", sMoat: "Moat score", sTrend: "Moat trend", sPrice: "Price on report date",
       sBase: "Base-case range", sUpside: "Upside to base midpoint", sRisk: "Biggest risk", sWatch: "Watching next",
       colSource: "Source", colScore: "Strength", colWhy: "Why",
@@ -199,6 +199,14 @@
     }).join("");
     var hasPend = s.some(function (x) { return x.state === "pend"; });
 
+    var entries = (SITE.journal || []).map(function (j) { return { date: j.date, text: j.text }; })
+      .concat(REPORTS.filter(function (r) { return r.notes && r.notes.length; }).map(function (r) { return { date: r.date, text: r.notes[0], report: r }; }))
+      .sort(function (x, y) { return x.date < y.date ? 1 : -1; });
+    var journal = entries.map(function (e) {
+      return '<li><span class="num j-date">' + e.date + "</span><div>" +
+        (e.report ? '<b class="j-co">' + tx(e.report.company) + "</b>" : "") + "<p>" + tx(e.text) + "</p>" +
+        (e.report ? '<a class="j-link" href="#r-' + e.report.id + '">' + u("readMore") + " →</a>" : "") + "</div></li>";
+    }).join("");
     var method = FRAMEWORK.map(function (f) { return "<li><b>" + tx(f.name) + "</b><span>" + tx(f.q) + "</span></li>"; }).join("");
     var about = SITE.about.map(function (a) { return "<div><h3>" + tx(a.h) + "</h3><p>" + tx(a.p) + "</p></div>"; }).join("");
 
@@ -208,6 +216,7 @@
       '<p class="meta">' + REPORTS.length + " " + u("nReports") + " · " + used.length + " " + u("nSectors") + " · " +
       gaps + " " + u("nGaps") + " · " + u("since") + '</p><p class="note">' + tx(SITE.disclaimer) + "</p></section>" +
 
+      (entries.length ? '<section class="sec" id="journal"><div class="sec-head"><h2>' + u("journal") + "</h2><p>" + u("journalNote") + '</p></div><ol class="journal">' + journal + "</ol></section>" : "") +
       '<section class="sec" id="reports"><div class="sec-head"><h2>' + u("glance") + "</h2><p>" + u("glanceNote") + "</p></div>" +
       '<div class="chips">' + chips + "</div>" +
       '<div class="table-scroll"><table class="glance"><thead><tr>' + th + "</tr></thead><tbody>" + rows + "</tbody></table></div></section>" +
@@ -265,7 +274,8 @@
   function renderReport(r) {
     var i = REPORTS.indexOf(r), prev = REPORTS[i - 1], next = REPORTS[i + 1], v = r.valuation;
     var up = upside(r);
-    var secs = [["s-snap", T("一页结论", "Snapshot")]].concat(FRAMEWORK.map(function (f) { return ["s-" + f.key, f.name]; }));
+    var mine = r.notes || [];
+    var secs = [["s-snap", T("一页结论", "Snapshot")]].concat(mine.length ? [["s-mine", T("我的想法", "My thoughts")]] : []).concat(FRAMEWORK.map(function (f) { return ["s-" + f.key, f.name]; }));
     var rail = secs.map(function (s) { return '<li><a href="#' + s[0] + '" data-sec="' + s[0] + '">' + tx(s[1]) + "</a></li>"; }).join("");
 
     function part(key, inner, k) {
@@ -322,6 +332,8 @@
       "<h3 class=\"sub\">" + u("thesis") + '</h3><ul class="thesis">' + li(r.thesis) + "</ul>" +
       "<h3 class=\"sub\">" + u("financials") + '</h3><dl class="figs">' + r.stats.map(function (s) { return "<div><dt>" + tx(s.k) + '</dt><dd class="num">' + tx(s.v) + "</dd></div>"; }).join("") + "</dl></section>" +
 
+      (mine.length ? '<section class="part" id="s-mine"><div class="part-h"><h2>' + u("mine") + '</h2></div><div class="mine">' +
+        mine.map(function (n) { return "<p>" + tx(n) + "</p>"; }).join("") + "</div></section>" : "") +
       part("moat", moat, 0) + part("prod", prod, 1) + part("val", val, 2) + part("edge", edge, 3) + part("dem", dem, 4) + part("weak", weak, 5) +
 
       '<nav class="pager">' +
