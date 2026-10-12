@@ -1,0 +1,4 @@
+market_data/
+__pycache__/
+.pytest_cache/
+*.csv

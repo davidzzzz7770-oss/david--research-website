@@ -16,3 +16,9 @@ Static site: open `index.html` or deploy to GitHub Pages. No build step.
 Copy one report object in `data/reports-2026.js` and edit it. Every visible
 text is written as `T("中文", "English")`. The `date` must fall on the two-week grid
 that starts on 2025-08-08. Missed fortnights go in `SITE.gaps`.
+
+## daytrader/
+
+A separate US-equity day-trading research project (Python): three published
+intraday strategies, a no-look-ahead backtester and walk-forward validation
+gates. See `daytrader/README.md`.
