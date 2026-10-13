@@ -1,6 +1,6 @@
-# David Research
+# David's Notebook
 
-Fortnightly research notes on leading A-share companies, in Chinese and English.
+Fortnightly study notes on leading A-share companies, in Chinese and English.
 Static site: open `index.html` or deploy to GitHub Pages. No build step.
 
 ## Files
@@ -13,6 +13,6 @@ Static site: open `index.html` or deploy to GitHub Pages. No build step.
 
 ## Adding a report
 
-Copy one report object in `data/reports-2026.js` and edit it. Every visible
+Copy one note object in `data/reports-2026.js` and edit it. Prices, market value, valuation, trend and take are as of the note's date; don't update them later. Every visible
 text is written as `T("中文", "English")`. The `date` must fall on the two-week grid
 that starts on 2025-08-08. Missed fortnights go in `SITE.gaps`.

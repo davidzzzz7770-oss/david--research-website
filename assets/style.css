@@ -301,3 +301,30 @@ footer .wrap { display: flex; justify-content: space-between; gap: 8px 16px; fle
 .journal p { font-size: 15px; }
 .j-link { font-size: 13px; color: var(--accent); }
 @media (max-width: 560px) { .journal li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+/* note page */
+.facts { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); margin-top: 24px; border-top: 1px solid var(--ink); }
+.facts div { padding: 10px 12px 0 0; }
+.facts dt { font-size: 12px; color: var(--muted); }
+.facts dd { font-size: 15px; margin-top: 2px; }
+.facts dd b { font-weight: 700; }
+@media (max-width: 760px) { .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 10px; } }
+@media (max-width: 420px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.asof { margin-top: 14px; font-size: 12px; color: var(--faint); }
+.part > h2 { font-size: 20px; margin-bottom: 10px; }
+.prose { max-width: 40em; font-size: 16px; line-height: 1.85; }
+.dots-list, .insight-list { display: grid; gap: 8px; max-width: 42em; }
+.dots-list li, .insight-list li { position: relative; padding-left: 18px; font-size: 15px; line-height: 1.8; }
+.dots-list li::before { content: ""; position: absolute; left: 2px; top: 0.8em; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); }
+.insight-list li::before { content: "→"; position: absolute; left: 0; color: var(--brass); }
+.part.hl { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--brass); padding: 22px 24px; margin-block: 8px; }
+.question { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--rule); max-width: 42em; }
+.question b { font-size: 12px; font-weight: 500; color: var(--muted); }
+.question p { font-size: 15px; margin-top: 2px; }
+.feed a { display: contents; }
+.feed li:hover p { color: var(--accent); }
+.feed .j-date { width: auto; }
+.journal.feed li { grid-template-columns: 170px minmax(0, 1fr); }
+.more { font: inherit; font-size: 13px; margin-top: 12px; padding: 4px 14px; border: 1px solid var(--rule); border-radius: 4px; background: transparent; color: var(--muted); cursor: pointer; }
+.more:hover { color: var(--ink); }
+@media (max-width: 560px) { .journal.feed li { grid-template-columns: minmax(0, 1fr); } .part.hl { padding: 18px 16px; } }
