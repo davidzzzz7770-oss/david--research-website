@@ -12,10 +12,10 @@
 
   var UI = {
     zh: {
-      brand: "David 的投资笔记", navNotes: "笔记", navInsights: "发现", navCalendar: "日历", navAbout: "关于",
+      brand: "David 的投资笔记", navPath: "路线", navNotes: "笔记", navInsights: "发现", navCalendar: "日历", navAbout: "关于",
       homeTitle: "每两周，看懂一家公司", since: "始于 2025 年 8 月", updated: "更新于",
       nNotes: "期笔记", nSectors: "个板块", nGaps: "期断更（考试）",
-      glance: "全部笔记", glanceNote: "估值、趋势、看法都是写那一期时的判断",
+      path: "我的路线", pathNote: "每一期留下一个问题，下一期去找答案", stage: "第 {n} 段", fromPrev: "接上一期", glance: "全部笔记", glanceNote: "估值、趋势、看法都是写那一期时的判断",
       th: ["期数", "日期", "公司", "行业", "护城河", "当时趋势", "当时估值", "当时看法"],
       all: "全部",
       insights: "一路上的发现", insightsNote: "每期笔记里我觉得最有意思的一条",
@@ -31,10 +31,10 @@
       prev: "上一期", next: "下一期"
     },
     en: {
-      brand: "David's Notebook", navNotes: "Notes", navInsights: "Insights", navCalendar: "Calendar", navAbout: "About",
+      brand: "David's Notebook", navPath: "Path", navNotes: "Notes", navInsights: "Insights", navCalendar: "Calendar", navAbout: "About",
       homeTitle: "One company every two weeks", since: "Since August 2025", updated: "Updated",
       nNotes: "notes", nSectors: "sectors", nGaps: "missed (exams)",
-      glance: "All notes", glanceNote: "Valuation, trend and take are as of each note's date",
+      path: "My path", pathNote: "Each note leaves a question that the next one follows up", stage: "Part {n}", fromPrev: "Follows on from", glance: "All notes", glanceNote: "Valuation, trend and take are as of each note's date",
       th: ["No.", "Date", "Company", "Industry", "Moat", "Trend then", "Valuation then", "Take then"],
       all: "All",
       insights: "Things I noticed", insightsNote: "The most interesting point from each note",
@@ -84,6 +84,10 @@
   var METRIC = { PE: "P/E", PB: "P/B", PEV: "P/EV" };
   function multFmt(r) { return METRIC[r.metric || "PE"] + " " + r.mult + "x"; }
   function trendTag(k) { return '<span class="trend ' + k + '">' + tx(ENUM.trend[k]) + "</span>"; }
+  function chapterOf(r) {
+    var i = SITE.chapters.map(function (c) { return c.key; }).indexOf(r.chapter);
+    return { i: i, c: SITE.chapters[i] };
+  }
   function li(a) { return a.map(function (x) { return "<li>" + tx(x) + "</li>"; }).join(""); }
 
   function slots() {
@@ -102,7 +106,7 @@
     document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
     document.getElementById("topbar").innerHTML =
       '<div class="wrap"><a class="brand" href="#home">' + u("brand") + "</a>" +
-      '<nav class="nav"><a href="#notes">' + u("navNotes") + '</a><a href="#insights">' + u("navInsights") + "</a>" +
+      '<nav class="nav"><a href="#path">' + u("navPath") + '</a><a href="#notes">' + u("navNotes") + '</a><a href="#insights">' + u("navInsights") + "</a>" +
       '<a href="#calendar">' + u("navCalendar") + '</a><a href="#about">' + u("navAbout") + "</a></nav>" +
       '<div class="lang" role="group" aria-label="Language">' +
       '<button type="button" data-lang="zh" class="' + (lang === "zh" ? "on" : "") + '">中文</button>' +
@@ -175,6 +179,14 @@
         '<div class="leaves">' + leaves + "</div></div>";
     }).join("");
 
+    var path = SITE.chapters.map(function (c, ci) {
+      var rs = REPORTS.filter(function (r) { return r.chapter === c.key; });
+      var steps = rs.map(function (r) {
+        return '<li><a href="#r-' + r.id + '"><span class="num">' + pad2(issueNo(r)) + "</span>" + tx(r.company) + "</a></li>";
+      }).join("");
+      return '<div class="stage"><div class="stage-h"><span class="num">' + u("stage").replace("{n}", ci + 1) + "</span><b>" + tx(c.name) + "</b><p>" + tx(c.q) + "</p></div>" +
+        '<ol class="steps">' + steps + "</ol></div>";
+    }).join("");
     var journal = (SITE.journal || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).map(function (j) {
       return '<li><span class="num j-date">' + j.date + "</span><p>" + tx(j.text) + "</p></li>";
     }).join("");
@@ -193,6 +205,7 @@
       '<p class="meta">' + REPORTS.length + " " + u("nNotes") + " · " + used.length + " " + u("nSectors") + " · " +
       gaps + " " + u("nGaps") + " · " + u("since") + "</p></section>" +
 
+      '<section class="sec" id="path"><div class="sec-head"><h2>' + u("path") + "</h2><p>" + u("pathNote") + '</p></div><div class="path">' + path + "</div></section>" +
       '<section class="sec" id="notes"><div class="sec-head"><h2>' + u("glance") + "</h2><p>" + u("glanceNote") + "</p></div>" +
       '<div class="chips">' + chips + "</div>" +
       '<div class="table-scroll"><table class="glance"><thead><tr>' + th + "</tr></thead><tbody>" + rows + "</tbody></table></div></section>" +
@@ -238,8 +251,10 @@
     var rail = FRAMEWORK.map(function (f) {
       return '<li><a href="#s-' + f.key + '" data-sec="s-' + f.key + '">' + tx(f.name) + "</a></li>";
     }).join("");
+    var ch = chapterOf(r);
     var body = {
-      why: '<p class="prose">' + tx(r.why) + "</p>",
+      why: (prev ? '<p class="from">' + u("fromPrev") + ' <a href="#r-' + prev.id + '">' + pad2(i) + " · " + tx(prev.company) + "</a></p>" : "") +
+        '<p class="prose">' + tx(r.why) + "</p>",
       money: '<ul class="dots-list">' + li(r.money) + "</ul>",
       moat: '<ul class="dots-list">' + li(r.moat) + "</ul>",
       value: '<p class="prose">' + tx(r.value) + "</p>",
@@ -264,6 +279,7 @@
       '<header class="r-head"><a class="back" href="#notes">' + u("back") + "</a>" +
       '<p class="r-meta"><span>' + u("issue").replace("{n}", pad2(i + 1)) + '</span><span class="num">' + r.date + "</span><span>" +
       esc(sectorName(r.sector)) + " / " + tx(r.industry) + '</span><span class="na">' + u("notAdvice") + "</span></p>" +
+      (ch.c ? '<p class="r-stage"><a href="#path">' + u("stage").replace("{n}", ch.i + 1) + " · " + tx(ch.c.name) + "</a></p>" : "") +
       "<h1>" + tx(r.company) + ' <span class="code num">' + r.code + "</span></h1>" +
       '<dl class="facts">' + facts + '</dl><p class="asof">' + u("asOf").replace("{d}", r.date) + "</p></header>" +
       '<div class="r-body"><nav class="rail" aria-label="Sections"><ol>' + rail + "</ol></nav><article>" + parts +
