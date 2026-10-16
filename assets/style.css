@@ -347,3 +347,24 @@ footer .wrap { display: flex; justify-content: space-between; gap: 8px 16px; fle
 .from { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
 .from a { color: var(--accent); }
 @media (max-width: 760px) { .stage { grid-template-columns: minmax(0, 1fr); gap: 4px; } .steps { padding-top: 4px; } .about { grid-template-columns: minmax(0, 1fr); } }
+
+/* edit mode */
+.ed-toggle { font: inherit; font-size: 13px; padding: 3px 12px; border: 1px solid var(--rule); border-radius: 4px; background: transparent; color: var(--muted); cursor: pointer; }
+.ed-toggle:hover, .ed-toggle.on { color: var(--paper); background: var(--brass); border-color: var(--brass); }
+body.editing [data-edit] { outline: 1px dashed var(--rule); outline-offset: 2px; border-radius: 2px; cursor: text; min-width: 2em; }
+body.editing [data-edit]:hover { outline-color: var(--brass); }
+body.editing [data-edit]:focus { outline: 2px solid var(--brass); background: var(--surface); }
+body.editing [data-edit]:empty::before { content: "…"; color: var(--faint); }
+body.editing { padding-bottom: 64px; }
+.ed-add { font: inherit; font-size: 13px; margin-top: 10px; padding: 3px 12px; border: 1px dashed var(--brass); border-radius: 4px; background: transparent; color: var(--brass); cursor: pointer; }
+.ed-note { display: block; margin-bottom: 12px; }
+.ed-del { font: inherit; font-size: 13px; margin-top: 24px; padding: 4px 14px; border: 1px solid var(--down); border-radius: 4px; background: transparent; color: var(--down); cursor: pointer; }
+.facts select, .facts input { font: inherit; font-size: 14px; width: 100%; max-width: 160px; padding: 2px 4px; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); color: var(--ink); }
+body.editing .facts { grid-template-columns: repeat(5, minmax(0, 1fr)); row-gap: 10px; }
+@media (max-width: 760px) { body.editing .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+#edbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--ink); color: var(--paper); padding-bottom: env(safe-area-inset-bottom, 0px); }
+#edbar .wrap { display: flex; align-items: center; gap: 12px; min-height: 52px; flex-wrap: wrap; font-size: 13px; }
+#edbar .ed-status { margin-left: auto; opacity: 0.75; }
+#edbar button { font: inherit; font-size: 13px; padding: 4px 14px; border-radius: 4px; cursor: pointer; border: 1px solid var(--paper); background: transparent; color: var(--paper); }
+#edbar .ed-save { background: var(--brass); border-color: var(--brass); }
+#edbar .ed-save:disabled { opacity: 0.4; cursor: default; }
