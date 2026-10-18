@@ -25,6 +25,18 @@ window.REPORTS.push(  {
     ]
   },
   {
+    id: "600522", date: "2025-08-15", chapter: "extra", code: "600522.SH",
+    company: T("中天科技", "Zhongtian Technology"), industry: T("光纤光缆与海缆", "Optical fibre & subsea cable"), sector: "tech",
+    price: 15.5, mcap: 530, mult: 19, moatScore: 0, trend: "tbd", verdict: "tbd",
+    why: T("路线之外的一期加更。中天科技做光纤光缆、海底电缆和电网设备，我想弄清楚这几块里到底哪一块在赚钱。", "An extra note outside the main path. Zhongtian makes optical fibre, subsea cables and grid equipment, and I want to work out which of these actually makes the money."),
+    money: [T("", "")],
+    moat: [T("", "")],
+    value: T("", ""),
+    insight: [T("", "")],
+    question: T("光纤、海缆、电网设备，哪一块是真正的利润来源？", "Fibre, subsea cable, grid equipment: which one is the real source of profit?"),
+    risk: [T("", "")]
+  },
+  {
     id: "601668", date: "2025-08-22", chapter: "worth", code: "601668.SH",
     company: T("中国建筑", "China State Construction"), industry: T("建筑", "Construction"), sector: "infra",
     price: 5.6, mcap: 2310, mult: 5, moatScore: 3, trend: "narrowing", verdict: "fair-low",
@@ -653,7 +665,7 @@ window.REPORTS.push(  {
     id: "600030", date: "2026-10-02", chapter: "unseen", code: "600030.SH",
     company: T("中信证券", "CITIC Securities"), industry: T("证券", "Brokerage"), sector: "finance",
     price: 29, mcap: 4300, mult: 1.45, metric: "PB", moatScore: 4, trend: "widening", verdict: "fair",
-    why: T("最后一期看券商。银行、保险、券商是金融的三大块，这期看完，28 期也正好写完。", "The last note: a broker. Banks, insurers and brokers are the three big parts of finance, and this one completes all 28 notes."),
+    why: T("最后一期看券商。银行、保险、券商是金融的三大块，这期看完，路线上的 28 期也正好写完。", "The last note: a broker. Banks, insurers and brokers are the three big parts of finance, and this one completes all 28 notes on the path."),
     money: [
       T("帮人买卖股票收佣金。", "Commissions on buying and selling shares."),
       T("帮公司上市、发债收承销费，还有自己拿钱投资。", "Fees for IPOs and bond issues, plus investing its own money.")

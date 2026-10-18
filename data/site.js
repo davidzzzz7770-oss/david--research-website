@@ -25,7 +25,8 @@ window.SITE = {
     { key: "cycle",  name: T("价格自己说了不算", "When you don't set the price"), q: T("卖的东西价格由市场决定时，公司还能控制什么？", "When the market sets your price, what can a company still control?") },
     { key: "maker",  name: T("给别人造东西", "Making things for others"), q: T("给大客户代工和自己做品牌，差别在哪？", "What's the difference between building for big customers and owning the brand?") },
     { key: "daily",  name: T("每天都在用的生意", "Things we use every day"), q: T("天天用的东西，为什么有的很值钱，有的不怎么增长？", "Why are some everyday businesses valuable while others barely grow?") },
-    { key: "unseen", name: T("看不见摸不着的生意", "Businesses you can't see"), q: T("卖的是未来的药、钱和承诺，该怎么理解？", "How do you understand businesses that sell future drugs, money and promises?") }
+    { key: "unseen", name: T("看不见摸不着的生意", "Businesses you can't see"), q: T("卖的是未来的药、钱和承诺，该怎么理解？", "How do you understand businesses that sell future drugs, money and promises?") },
+    { key: "extra",  name: T("加更", "Extra"), q: T("路线之外，临时想看的公司", "Companies I looked at outside the main path") }
   ],
   sectors: [
     { key: "consumer",  name: T("消费", "Consumer") },

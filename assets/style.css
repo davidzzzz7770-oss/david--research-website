@@ -368,3 +368,8 @@ body.editing .facts { grid-template-columns: repeat(5, minmax(0, 1fr)); row-gap:
 #edbar button { font: inherit; font-size: 13px; padding: 4px 14px; border-radius: 4px; cursor: pointer; border: 1px solid var(--paper); background: transparent; color: var(--paper); }
 #edbar .ed-save { background: var(--brass); border-color: var(--brass); }
 #edbar .ed-save:disabled { opacity: 0.4; cursor: default; }
+
+.empty { color: var(--faint); font-style: italic; font-size: 14px; }
+.trend.tbd { color: var(--faint); }
+.cal .pub.extra { background: var(--brass); border-color: var(--brass); }
+.legend .l-extra { background: var(--brass); border-color: var(--brass); }

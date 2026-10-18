@@ -37,7 +37,7 @@
       unsaved: "有改动还没保存", done: "退出编辑", addLine: "+ 加一条", addNote: "+ 写新的一期", addJournal: "+ 写一条随手记",
       delNote: "删除这一期", delConfirm: "再点一次确认删除", saveConflict: "别的地方刚保存过，页面会刷新成最新版，这次的改动没保存上",
       saveNoRight: "你没有这个页面的编辑权限", saveTooBig: "内容太大，保存不了", saveFail: "保存失败，请再试一次",
-      fDate: "日期", fCode: "代码", fChapter: "阶段", fSector: "板块", fMetric: "估值方法"
+      fDate: "日期", bonus: "加更", empty: "还没写",  fCode: "代码", fChapter: "阶段", fSector: "板块", fMetric: "估值方法"
     },
     en: {
       brand: "David's Notebook", navPath: "Path", navNotes: "Notes", navInsights: "Insights", navCalendar: "Calendar", navAbout: "About",
@@ -61,12 +61,12 @@
       unsaved: "Unsaved changes", done: "Stop editing", addLine: "+ Add a line", addNote: "+ Write a new note", addJournal: "+ Add a journal entry",
       delNote: "Delete this note", delConfirm: "Click again to delete", saveConflict: "Someone saved just now; the page will reload to that version and this edit was not saved",
       saveNoRight: "You don't have permission to edit this page", saveTooBig: "Too much content to save", saveFail: "Save failed, please try again",
-      fDate: "Date", fCode: "Code", fChapter: "Part", fSector: "Sector", fMetric: "Valuation basis"
+      fDate: "Date", bonus: "Extra", empty: "Not written yet",  fCode: "Code", fChapter: "Part", fSector: "Sector", fMetric: "Valuation basis"
     }
   };
   var ENUM = {
-    verdict: { under: T("便宜", "Cheap"), "fair-low": T("有点便宜", "A bit cheap"), fair: T("差不多", "About right"), "fair-high": T("有点贵", "A bit pricey"), over: T("贵", "Pricey") },
-    trend: { widening: T("在变宽", "Widening"), stable: T("稳定", "Stable"), narrowing: T("在变窄", "Narrowing") }
+    verdict: { under: T("便宜", "Cheap"), "fair-low": T("有点便宜", "A bit cheap"), fair: T("差不多", "About right"), "fair-high": T("有点贵", "A bit pricey"), over: T("贵", "Pricey"), tbd: T("待定", "Not decided") },
+    trend: { widening: T("在变宽", "Widening"), stable: T("稳定", "Stable"), narrowing: T("在变窄", "Narrowing"), tbd: T("待定", "Not decided") }
   };
   function T(zh, en) { return { zh: zh, en: en }; }
   function t(x) {
@@ -101,6 +101,13 @@
   var METRIC = { PE: "P/E", PB: "P/B", PEV: "P/EV" };
   function multFmt(r) { return METRIC[r.metric || "PE"] + " " + r.mult + "x"; }
   function trendTag(k) { return '<span class="trend ' + k + '">' + tx(ENUM.trend[k]) + "</span>"; }
+  function stageLabel(ci) { return SITE.chapters[ci].key === "extra" ? u("bonus") : u("stage").replace("{n}", ci + 1); }
+  function chainPrev(r) {
+    if (r.chapter === "extra") return null;
+    var i = REPORTS.indexOf(r);
+    for (var k = i - 1; k >= 0; k--) if (REPORTS[k].chapter !== "extra") return REPORTS[k];
+    return null;
+  }
   function chapterOf(r) {
     var i = SITE.chapters.map(function (c) { return c.key; }).indexOf(r.chapter);
     return { i: i, c: SITE.chapters[i] };
@@ -112,10 +119,12 @@
    * kind n = a note (n|<id>|field|index), s = site settings (s|field|index|key).
    * Edits change the current language only; Save republishes the whole page. */
   function ed(path, x, tag, cls) {
+    if (!editing && !t(x)) return "<" + tag + ' class="' + (cls ? cls + " " : "") + 'empty">' + u("empty") + "</" + tag + ">";
     return "<" + tag + (cls ? ' class="' + cls + '"' : "") + ' data-edit="' + esc(path) + '">' + tx(x) + "</" + tag + ">";
   }
   function edList(r, field, cls) {
-    var items = (r[field] || []).map(function (x, k) { return ed("n|" + r.id + "|" + field + "|" + k, x, "li"); }).join("");
+    var items = (r[field] || []).map(function (x, k) { return editing || t(x) ? ed("n|" + r.id + "|" + field + "|" + k, x, "li") : ""; }).join("");
+    if (!items) return '<p class="empty">' + u("empty") + "</p>";
     return '<ul class="' + cls + '">' + items + "</ul>" +
       (editing ? '<button type="button" class="ed-add" data-add="' + r.id + "|" + field + '">' + u("addLine") + "</button>" : "");
   }
@@ -232,7 +241,10 @@
       out.push({ date: k, report: byDate[k], state: byDate[k] ? "pub" : SITE.gaps.indexOf(k) >= 0 ? "gap" : "pend" });
       d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + SITE.cadenceDays);
     }
-    return out;
+    REPORTS.forEach(function (r) {
+      if (!out.some(function (x) { return x.date === r.date; })) out.push({ date: r.date, report: r, state: "pub", extra: true });
+    });
+    return out.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
   }
 
   /* ---------- top bar ---------- */
@@ -297,7 +309,7 @@
     /* insights feed: first insight from each note, newest first */
     var feed = REPORTS.slice().reverse();
     var shown = showAllInsights ? feed : feed.slice(0, 6);
-    var insights = shown.filter(function (r) { return r.insight && r.insight[0]; }).map(function (r) {
+    var insights = shown.filter(function (r) { return r.insight && r.insight[0] && t(r.insight[0]); }).map(function (r) {
       return '<li><a href="#r-' + r.id + '"><span class="num j-date">' + pad2(issueNo(r)) + " · " + tx(r.company) + "</span><p>" + tx(r.insight[0]) + "</p></a></li>";
     }).join("");
 
@@ -322,7 +334,7 @@
       var steps = rs.map(function (r) {
         return '<li><a href="#r-' + r.id + '"><span class="num">' + pad2(issueNo(r)) + "</span>" + tx(r.company) + "</a></li>";
       }).join("");
-      return '<div class="stage"><div class="stage-h"><span class="num">' + u("stage").replace("{n}", ci + 1) + "</span><b>" + tx(c.name) + "</b><p>" + tx(c.q) + "</p></div>" +
+      return '<div class="stage"><div class="stage-h"><span class="num">' + stageLabel(ci) + "</span><b>" + tx(c.name) + "</b><p>" + tx(c.q) + "</p></div>" +
         '<ol class="steps">' + steps + "</ol></div>";
     }).join("");
     var journal = (SITE.journal || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).map(function (j) {
@@ -331,7 +343,7 @@
 
     var cal = s.map(function (x) {
       var label = x.date + " · " + (x.state === "pub" ? t(x.report.company) : x.state === "gap" ? u("lgGap") : u("lgPend"));
-      if (x.state === "pub") return '<a class="pub num" href="#r-' + x.report.id + '" title="' + esc(label) + '">' + pad2(issueNo(x.report)) + "</a>";
+      if (x.state === "pub") return '<a class="pub num' + (x.extra ? " extra" : "") + '" href="#r-' + x.report.id + '" title="' + esc(label) + '">' + pad2(issueNo(x.report)) + "</a>";
       return '<span class="' + x.state + '" title="' + esc(label) + '"></span>';
     }).join("");
     var hasPend = s.some(function (x) { return x.state === "pend"; });
@@ -360,6 +372,7 @@
       '<div class="cal">' + cal + "</div>" +
       '<div class="legend"><span><i class="l-pub"></i>' + u("lgPub") + '</span><span><i class="l-gap"></i>' + u("lgGap") + "</span>" +
       (hasPend ? '<span><i class="l-pend"></i>' + u("lgPend") + "</span>" : "") +
+      (s.some(function (x) { return x.extra; }) ? '<span><i class="l-extra"></i>' + u("bonus") + "</span>" : "") +
       '<span class="num legend-range">' + s[0].date + " → " + s[s.length - 1].date + "</span></div>" +
       (journal || editing ? '<h3 class="sub">' + u("journal") + '</h3><ol class="journal">' + journal + "</ol>" : "") +
       (editing ? '<button type="button" class="ed-add ed-journal">' + u("addJournal") + "</button>" : "") + "</section>" +
@@ -417,7 +430,7 @@
       [u("fMoat"), sel(id + "|moatScore", r.moatScore, [[1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]])],
       [u("fTrend"), sel(id + "|trend", r.trend, enumOpts(ENUM.trend))],
       [u("fTake"), sel(id + "|verdict", r.verdict, enumOpts(ENUM.verdict))],
-      [u("fChapter"), sel(id + "|chapter", r.chapter, SITE.chapters.map(function (c, k) { return [c.key, (k + 1) + " · " + t(c.name)]; }))],
+      [u("fChapter"), sel(id + "|chapter", r.chapter, SITE.chapters.map(function (c, k) { return [c.key, c.key === "extra" ? t(c.name) : (k + 1) + " · " + t(c.name)]; }))],
       [u("fSector"), sel(id + "|sector", r.sector, SITE.sectors.map(function (c) { return [c.key, t(c.name)]; }))]
     ].map(function (x) { return "<div><dt>" + x[0] + "</dt><dd>" + x[1] + "</dd></div>"; }).join("");
   }
@@ -426,9 +439,9 @@
     var rail = FRAMEWORK.map(function (f) {
       return '<li><a href="#s-' + f.key + '" data-sec="s-' + f.key + '">' + tx(f.name) + "</a></li>";
     }).join("");
-    var ch = chapterOf(r);
+    var ch = chapterOf(r), cp = chainPrev(r);
     var body = {
-      why: (prev ? '<p class="from">' + u("fromPrev") + ' <a href="#r-' + prev.id + '">' + pad2(i) + " · " + tx(prev.company) + "</a></p>" : "") +
+      why: (cp ? '<p class="from">' + u("fromPrev") + ' <a href="#r-' + cp.id + '">' + pad2(issueNo(cp)) + " · " + tx(cp.company) + "</a></p>" : "") +
         ed("n|" + r.id + "|why", r.why, "p", "prose"),
       money: edList(r, "money", "dots-list"),
       moat: edList(r, "moat", "dots-list"),
@@ -455,7 +468,7 @@
       '<header class="r-head"><a class="back" href="#notes">' + u("back") + "</a>" +
       '<p class="r-meta"><span>' + u("issue").replace("{n}", pad2(i + 1)) + '</span><span class="num">' + r.date + "</span><span>" +
       esc(sectorName(r.sector)) + " / " + ed("n|" + r.id + "|industry", r.industry, "span") + '</span><span class="na">' + u("notAdvice") + "</span></p>" +
-      (ch.c ? '<p class="r-stage"><a href="#path">' + u("stage").replace("{n}", ch.i + 1) + " · " + tx(ch.c.name) + "</a></p>" : "") +
+      (ch.c ? '<p class="r-stage"><a href="#path">' + stageLabel(ch.i) + (ch.c.key === "extra" ? "" : " · " + tx(ch.c.name)) + "</a></p>" : "") +
       "<h1>" + ed("n|" + r.id + "|company", r.company, "span") + " " + ed("n|" + r.id + "|code", r.code, "span", "code num") + "</h1>" +
       '<dl class="facts">' + facts + '</dl><p class="asof">' + u("asOf").replace("{d}", r.date) + "</p></header>" +
       '<div class="r-body"><nav class="rail" aria-label="Sections"><ol>' + rail + "</ol></nav><article>" + parts +
