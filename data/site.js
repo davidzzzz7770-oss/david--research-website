@@ -13,7 +13,7 @@ window.SITE = {
   start: "2025-08-08",   // first note; one every 14 days after that
   cadenceDays: 14,
   gaps: ["2026-04-17", "2026-05-01", "2026-05-15"],
-  updated: "2026-10-13",
+  updated: "2026-10-24",
   intro: T(
     "我是 David，一个对投资感兴趣的高中生。从 2025 年 8 月开始，我每两周挑一个行业，看看它在 A 股里最大的那家公司是怎么赚钱的。不是专业研究，就是一边查资料一边记笔记，想弄明白：为什么有的公司值那么多钱，有的却很便宜。",
     "I'm David, a high school student who got curious about investing. Since August 2025, every two weeks I pick an industry and look at how its biggest company on China's A-share market makes money. It isn't professional research, just notes I take while reading, trying to work out why some companies are worth so much and others so little."
@@ -25,8 +25,7 @@ window.SITE = {
     { key: "cycle",  name: T("价格自己说了不算", "When you don't set the price"), q: T("卖的东西价格由市场决定时，公司还能控制什么？", "When the market sets your price, what can a company still control?") },
     { key: "maker",  name: T("给别人造东西", "Making things for others"), q: T("给大客户代工和自己做品牌，差别在哪？", "What's the difference between building for big customers and owning the brand?") },
     { key: "daily",  name: T("每天都在用的生意", "Things we use every day"), q: T("天天用的东西，为什么有的很值钱，有的不怎么增长？", "Why are some everyday businesses valuable while others barely grow?") },
-    { key: "unseen", name: T("看不见摸不着的生意", "Businesses you can't see"), q: T("卖的是未来的药、钱和承诺，该怎么理解？", "How do you understand businesses that sell future drugs, money and promises?") },
-    { key: "extra",  name: T("加更", "Extra"), q: T("路线之外，临时想看的公司", "Companies I looked at outside the main path") }
+    { key: "unseen", name: T("看不见摸不着的生意", "Businesses you can't see"), q: T("卖的是未来的药、钱和承诺，该怎么理解？", "How do you understand businesses that sell future drugs, money and promises?") }
   ],
   sectors: [
     { key: "consumer",  name: T("消费", "Consumer") },

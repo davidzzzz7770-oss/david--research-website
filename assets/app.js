@@ -37,7 +37,7 @@
       unsaved: "有改动还没保存", done: "退出编辑", addLine: "+ 加一条", addNote: "+ 写新的一期", addJournal: "+ 写一条随手记",
       delNote: "删除这一期", delConfirm: "再点一次确认删除", saveConflict: "别的地方刚保存过，页面会刷新成最新版，这次的改动没保存上",
       saveNoRight: "你没有这个页面的编辑权限", saveTooBig: "内容太大，保存不了", saveFail: "保存失败，请再试一次",
-      fDate: "日期", bonus: "加更", empty: "还没写",  fCode: "代码", fChapter: "阶段", fSector: "板块", fMetric: "估值方法"
+      fDate: "日期", empty: "还没写", later: "后来", noChapter: "不在路线里",  fCode: "代码", fChapter: "阶段", fSector: "板块", fMetric: "估值方法"
     },
     en: {
       brand: "David's Notebook", navPath: "Path", navNotes: "Notes", navInsights: "Insights", navCalendar: "Calendar", navAbout: "About",
@@ -61,7 +61,7 @@
       unsaved: "Unsaved changes", done: "Stop editing", addLine: "+ Add a line", addNote: "+ Write a new note", addJournal: "+ Add a journal entry",
       delNote: "Delete this note", delConfirm: "Click again to delete", saveConflict: "Someone saved just now; the page will reload to that version and this edit was not saved",
       saveNoRight: "You don't have permission to edit this page", saveTooBig: "Too much content to save", saveFail: "Save failed, please try again",
-      fDate: "Date", bonus: "Extra", empty: "Not written yet",  fCode: "Code", fChapter: "Part", fSector: "Sector", fMetric: "Valuation basis"
+      fDate: "Date", empty: "Not written yet", later: "Later", noChapter: "Not on the path",  fCode: "Code", fChapter: "Part", fSector: "Sector", fMetric: "Valuation basis"
     }
   };
   var ENUM = {
@@ -101,11 +101,11 @@
   var METRIC = { PE: "P/E", PB: "P/B", PEV: "P/EV" };
   function multFmt(r) { return METRIC[r.metric || "PE"] + " " + r.mult + "x"; }
   function trendTag(k) { return '<span class="trend ' + k + '">' + tx(ENUM.trend[k]) + "</span>"; }
-  function stageLabel(ci) { return SITE.chapters[ci].key === "extra" ? u("bonus") : u("stage").replace("{n}", ci + 1); }
+  function stageLabel(ci) { return u("stage").replace("{n}", ci + 1); }
   function chainPrev(r) {
-    if (r.chapter === "extra") return null;
+    if (!r.chapter) return null;
     var i = REPORTS.indexOf(r);
-    for (var k = i - 1; k >= 0; k--) if (REPORTS[k].chapter !== "extra") return REPORTS[k];
+    for (var k = i - 1; k >= 0; k--) if (REPORTS[k].chapter) return REPORTS[k];
     return null;
   }
   function chapterOf(r) {
@@ -242,7 +242,7 @@
       d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + SITE.cadenceDays);
     }
     REPORTS.forEach(function (r) {
-      if (!out.some(function (x) { return x.date === r.date; })) out.push({ date: r.date, report: r, state: "pub", extra: true });
+      if (!out.some(function (x) { return x.date === r.date; })) out.push({ date: r.date, report: r, state: "pub" });
     });
     return out.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
   }
@@ -343,7 +343,7 @@
 
     var cal = s.map(function (x) {
       var label = x.date + " · " + (x.state === "pub" ? t(x.report.company) : x.state === "gap" ? u("lgGap") : u("lgPend"));
-      if (x.state === "pub") return '<a class="pub num' + (x.extra ? " extra" : "") + '" href="#r-' + x.report.id + '" title="' + esc(label) + '">' + pad2(issueNo(x.report)) + "</a>";
+      if (x.state === "pub") return '<a class="pub num" href="#r-' + x.report.id + '" title="' + esc(label) + '">' + pad2(issueNo(x.report)) + "</a>";
       return '<span class="' + x.state + '" title="' + esc(label) + '"></span>';
     }).join("");
     var hasPend = s.some(function (x) { return x.state === "pend"; });
@@ -372,7 +372,6 @@
       '<div class="cal">' + cal + "</div>" +
       '<div class="legend"><span><i class="l-pub"></i>' + u("lgPub") + '</span><span><i class="l-gap"></i>' + u("lgGap") + "</span>" +
       (hasPend ? '<span><i class="l-pend"></i>' + u("lgPend") + "</span>" : "") +
-      (s.some(function (x) { return x.extra; }) ? '<span><i class="l-extra"></i>' + u("bonus") + "</span>" : "") +
       '<span class="num legend-range">' + s[0].date + " → " + s[s.length - 1].date + "</span></div>" +
       (journal || editing ? '<h3 class="sub">' + u("journal") + '</h3><ol class="journal">' + journal + "</ol>" : "") +
       (editing ? '<button type="button" class="ed-add ed-journal">' + u("addJournal") + "</button>" : "") + "</section>" +
@@ -430,7 +429,7 @@
       [u("fMoat"), sel(id + "|moatScore", r.moatScore, [[1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]])],
       [u("fTrend"), sel(id + "|trend", r.trend, enumOpts(ENUM.trend))],
       [u("fTake"), sel(id + "|verdict", r.verdict, enumOpts(ENUM.verdict))],
-      [u("fChapter"), sel(id + "|chapter", r.chapter, SITE.chapters.map(function (c, k) { return [c.key, c.key === "extra" ? t(c.name) : (k + 1) + " · " + t(c.name)]; }))],
+      [u("fChapter"), sel(id + "|chapter", r.chapter, [["", u("noChapter")]].concat(SITE.chapters.map(function (c, k) { return [c.key, (k + 1) + " · " + t(c.name)]; })))],
       [u("fSector"), sel(id + "|sector", r.sector, SITE.sectors.map(function (c) { return [c.key, t(c.name)]; }))]
     ].map(function (x) { return "<div><dt>" + x[0] + "</dt><dd>" + x[1] + "</dd></div>"; }).join("");
   }
@@ -447,7 +446,8 @@
       moat: edList(r, "moat", "dots-list"),
       value: ed("n|" + r.id + "|value", r.value, "p", "prose"),
       insight: edList(r, "insight", "insight-list") +
-        (r.question && (t(r.question) || editing) ? '<div class="question"><b>' + u("question") + "</b>" + ed("n|" + r.id + "|question", r.question, "p") + "</div>" : ""),
+        (r.question && (t(r.question) || editing) ? '<div class="question"><b>' + u("question") + "</b>" + ed("n|" + r.id + "|question", r.question, "p") + "</div>" : "") +
+        (r.later && (t(r.later) || editing) ? '<div class="question later"><b>' + u("later") + "</b>" + ed("n|" + r.id + "|later", r.later, "p") + "</div>" : ""),
       risk: edList(r, "risk", "dots-list")
     };
     var parts = FRAMEWORK.map(function (f) {
@@ -468,7 +468,7 @@
       '<header class="r-head"><a class="back" href="#notes">' + u("back") + "</a>" +
       '<p class="r-meta"><span>' + u("issue").replace("{n}", pad2(i + 1)) + '</span><span class="num">' + r.date + "</span><span>" +
       esc(sectorName(r.sector)) + " / " + ed("n|" + r.id + "|industry", r.industry, "span") + '</span><span class="na">' + u("notAdvice") + "</span></p>" +
-      (ch.c ? '<p class="r-stage"><a href="#path">' + stageLabel(ch.i) + (ch.c.key === "extra" ? "" : " · " + tx(ch.c.name)) + "</a></p>" : "") +
+      (ch.c ? '<p class="r-stage"><a href="#path">' + stageLabel(ch.i) + " · " + tx(ch.c.name) + "</a></p>" : "") +
       "<h1>" + ed("n|" + r.id + "|company", r.company, "span") + " " + ed("n|" + r.id + "|code", r.code, "span", "code num") + "</h1>" +
       '<dl class="facts">' + facts + '</dl><p class="asof">' + u("asOf").replace("{d}", r.date) + "</p></header>" +
       '<div class="r-body"><nav class="rail" aria-label="Sections"><ol>' + rail + "</ol></nav><article>" + parts +
