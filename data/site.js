@@ -15,8 +15,8 @@ window.SITE = {
   gaps: ["2026-04-17", "2026-05-01", "2026-05-15"],
   updated: "2026-10-24",
   intro: T(
-    "我是 David，一个对投资感兴趣的高中生。从 2025 年 8 月开始，我每两周挑一个行业，看看它在 A 股里最大的那家公司是怎么赚钱的。不是专业研究，就是一边查资料一边记笔记，想弄明白：为什么有的公司值那么多钱，有的却很便宜。",
-    "I'm David, a high school student who got curious about investing. Since August 2025, every two weeks I pick an industry and look at how its biggest company on China's A-share market makes money. It isn't professional research, just notes I take while reading, trying to work out why some companies are worth so much and others so little."
+    "我是 David，一个对投资感兴趣的高中生。从 2025 年 8 月开始，我一个行业一个行业地看 A 股里最大的那些公司，弄清楚它们是怎么赚钱的。不是专业研究，就是一边查资料一边记笔记，想弄明白：为什么有的公司值那么多钱，有的却很便宜。",
+    "I'm David, a high school student who got curious about investing. Since August 2025, I have been going through industries one at a time, looking at how the biggest companies on China's A-share market make money. It isn't professional research, just notes I take while reading, trying to work out why some companies are worth so much and others so little."
   ),
   /* The order of the notes: each chapter asks one question, each note leads to the next. */
   chapters: [

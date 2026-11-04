@@ -17,7 +17,7 @@
   var UI = {
     zh: {
       brand: "David 的投资笔记", navPath: "路线", navNotes: "笔记", navInsights: "发现", navCalendar: "日历", navAbout: "关于",
-      homeTitle: "每两周，看懂一家公司", since: "始于 2025 年 8 月", updated: "更新于",
+      homeTitle: "公司研究笔记", since: "始于 2025 年 8 月", updated: "更新于",
       nNotes: "期笔记", nSectors: "个板块", nGaps: "期断更（考试）",
       path: "我的路线", pathNote: "每一期留下一个问题，下一期去找答案", stage: "第 {n} 段", fromPrev: "接上一期", glance: "全部笔记", glanceNote: "估值、趋势、看法都是写那一期时的判断",
       th: ["期数", "日期", "公司", "行业", "护城河", "当时趋势", "当时估值", "当时看法"],
@@ -41,7 +41,7 @@
     },
     en: {
       brand: "David's Notebook", navPath: "Path", navNotes: "Notes", navInsights: "Insights", navCalendar: "Calendar", navAbout: "About",
-      homeTitle: "One company every two weeks", since: "Since August 2025", updated: "Updated",
+      homeTitle: "Company research notes", since: "Since August 2025", updated: "Updated",
       nNotes: "notes", nSectors: "sectors", nGaps: "missed (exams)",
       path: "My path", pathNote: "Each note leaves a question that the next one follows up", stage: "Part {n}", fromPrev: "Follows on from", glance: "All notes", glanceNote: "Valuation, trend and take are as of each note's date",
       th: ["No.", "Date", "Company", "Industry", "Moat", "Trend then", "Valuation then", "Take then"],
